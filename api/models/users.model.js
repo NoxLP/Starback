@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const userSchema = new mongoose.Schema({
-  username: {
+  user: {
     type: String,
     required: [true, 'User name is required'],
   },
@@ -26,6 +26,20 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'user',
   },
+  name: {
+    type: String,
+    required: [true, 'Name is required'],
+  },
+  surname: String,
+  location: {
+    type: String,
+    required: [true, 'Location is required'],
+  },
+  job: {
+    type: String,
+    enum: ['Estudiante', 'Aficionado', 'Astrónomo'],
+  },
+  birthDate: Date,
 })
 
 const userModel = mongoose.model('user', userSchema)

@@ -3,25 +3,28 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
 function signUp(req, res) {
+  console.log('signup ', req.body)
   if (req.body && req.body.password) {
     const encryptedPasswd = bcrypt.hashSync(req.body.password, 10)
+    console.log(encryptedPasswd)
+    req.body.password = encryptedPasswd
     userModel
-      .create({
-        username: req.body.username,
-        email: req.body.email,
-        password: encryptedPasswd,
-      })
+      .create(req.body)
       .then((user) => {
-        const data = { email: user.email, username: user.username }
+        const data = { email: user.email, user: user.user }
         const token = jwt.sign(data, process.env.SECRET)
-
+        console.log('signup ok, token: ', token)
         res.status(200).json({ token: token, ...data })
       })
-      .catch((err) => res.status(500).json(err))
+      .catch((err) => {
+        console.log('error in signup: ', err)
+        res.status(500).json(err)
+      })
   }
 }
 
 function login(req, res) {
+  console.log('login ', req.body)
   userModel
     .findOne({
       email: req.body.email,
@@ -29,7 +32,7 @@ function login(req, res) {
     .then((user) => {
       if (user) {
         if (bcrypt.compareSync(req.body.password, user.password)) {
-          const data = { email: user.email, username: user.username }
+          const data = { email: user.email, user: user.user }
           const token = jwt.sign(data, process.env.SECRET)
 
           res.status(200).json({ token: token, ...data })
