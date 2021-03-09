@@ -1,7 +1,7 @@
 const router = require('express').Router()
 
 const authRouter = require('./auth.router')
-const eventsRouter = require('./event.router')
+const eventsRouter = require('./events.router')
 const commentsRouter = require('./comments.router')
 const { authUser } = require('../utils') // Authenticated Route
 

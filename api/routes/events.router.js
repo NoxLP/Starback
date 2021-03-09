@@ -3,7 +3,7 @@ const { authUser } = require('../utils')
 const { getEvent,
         pushEvent,
         getLastEvent 
-    } = require('../controllers/event.controller')
+    } = require('../controllers/events.controller')
 
 router.get('/:eventId', getEvent)
 router.put('/favourite/:eventId', pushEvent)
