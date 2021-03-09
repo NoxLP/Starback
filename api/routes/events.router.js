@@ -1,9 +1,10 @@
 const router = require('express').Router()
-const { authUser } = require('../utils')
-const { getEvent,
-        pushEvent,
-        getLastEvent 
-    } = require('../controllers/events.controller')
+const {
+  getEvent,
+  pushEvent,
+  getLastEvent,
+  getCategory,
+} = require('../controllers/event.controller')
 
 router.get('/:eventId', getEvent)
 router.put('/favourite/:eventId', pushEvent)
