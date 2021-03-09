@@ -26,5 +26,8 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.11.18",
     "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "vue-cli-plugin-vuetify": "~2.2.2"
   }
 }
