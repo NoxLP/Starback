@@ -15,12 +15,12 @@ const eventSchema = new Mongoose.Schema({
   category: {
     type: String,
     enum: [
-      'eclipseMoon',
-      'eclipseSun',
+      'eclipsesMoon',
+      'eclipsesSun',
       'planets',
-      'meteorShower',
+      'meteorShowers',
       'comets',
-      'conjunction',
+      'conjunctions',
     ],
     required: true,
   },
