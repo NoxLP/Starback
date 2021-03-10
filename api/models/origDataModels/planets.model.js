@@ -5,7 +5,7 @@ const planetsSchema = new Mongoose.Schema({
     required: true,
   },
   date: {
-    type: String,
+    type: Date,
     required: true,
   },
   x: {
@@ -43,3 +43,5 @@ const planetsSchema = new Mongoose.Schema({
 })
 
 const planetsModel = Mongoose.model('planets', planetsSchema)
+
+module.exports = planetsModel

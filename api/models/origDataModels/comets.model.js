@@ -51,3 +51,4 @@ const cometsSchema = new Mongoose.Schema({
 })
 
 const cometsModel = Mongoose.model('comets', cometsSchema)
+module.exports = cometsModel

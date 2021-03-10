@@ -29,3 +29,4 @@ const eclipsesSchema = new Mongoose.Schema({
 })
 
 const eclipsesModel = Mongoose.model('eclipses', eclipsesSchema)
+module.exports = eclipsesModel
