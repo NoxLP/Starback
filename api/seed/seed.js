@@ -51,13 +51,82 @@ const PLANETS_SPANISH = [
 ]
 
 //#region helpers
-const buildEventTitle = (ephem, category) => {
-  //TODO
-  return ephem.name
+const buildEventTitle = (ephem, category, ephem2) => {
+  //TODO => localizar a español las strings pretinentes
+  let title
+  switch (category) {
+    case 'planets':
+    case 'meteorShowers':
+      title = ephem.name
+      break
+    case 'eclipsesMoon':
+      title = 'Eclipse lunar'
+      break
+    case 'eclipsesSun':
+      title = 'Eclipse solar'
+      break
+    case 'comets':
+      title = ephem.object
+      break
+    case 'conjunctions':
+      title = `Alineación ${ephem.name} ${ephem2.name}`
+      break
+  }
+  return title
 }
-const buildEventDescription = (ephem, category) => {
-  //TODO
-  return ephem.name
+const buildEventDescription = (ephem, category, ephem2) => {
+  //TODO => localizar a español las strings pretinentes
+  let description
+  switch (category) {
+    case 'planets':
+      description = `${
+        ephem.name
+      } será visible en ${ephem.date.toLocaleString()} con magnitud ${
+        ephem.mag
+      }.
+Ascensión recta: ${ephem.ra}
+Declinación: ${ephem.dec}`
+      break
+    case 'eclipsesMoon':
+      description = `Eclipse ${ephem.type}.
+Será visible en ${ephem.date.toLocaleString()} a las ${ephem.time.toLocaleTimeString()} con magnitud ${
+        ephem.magnitude
+      }.
+Coordenadas: ${ephem.coorsZodiac}`
+      break
+    case 'eclipsesSun':
+      description = `Eclipse ${ephem.type}.
+Será visible en ${ephem.date.toLocaleString()} a las ${ephem.time.toLocaleTimeString()} con magnitud ${
+        ephem.magnitude
+      }.
+Coordenadas: ${ephem.coorsZodiac}`
+      break
+    case 'meteorShowers':
+      description = `${ephem.name}.
+  Entre ${ephem.dateMin.toLocaleString()} y ${ephem.dateMax.toLocaleString()} con máximo el día ${ephem.peak.toLocaleString()}.
+Ascensión recta: ${ephem.ra}
+Declinación: ${ephem.dec}
+Brillo aparente: ${ephem.rating}`
+      break
+    case 'comets':
+      description = `${ephem.object}.
+  A partir del ${ephem.date.toLocaleString()}.
+Perihelio: ${ephem.peDate.toLocaleString()}
+Ascensión recta: ${ephem.ra}
+Constelación: ${ephem.constellation}
+Visible desde las ${ephem.visibleFrom} hasta las ${ephem.visibleUntil}
+Magnitud aparente antes del perihelio: ${ephem.peMa}`
+      break
+    case 'conjunctions':
+      description = `Conjunción de ${ephem.name} y ${
+        ephem2.name
+      }, el día ${ephem.date.toLocaleString()}.
+Ascensión recta: ${ephem.ra}
+Declinación: ${ephem.dec}
+Magnitud aparente: ${ephem.mag}`
+      break
+  }
+  return description
 }
 const buildEvent = (ephem, category) => {
   return {
@@ -183,7 +252,9 @@ async function buildEclipsesEvents() {
     let eclipses = await eclipsesModel.find()
 
     await eventsModel.bulkWrite(
-      eclipses.map((ephem) => buildEvent(ephem, 'eclipses'))
+      eclipses.map((ephem) =>
+        buildEvent(ephem, ephem.sl === 'Solar' ? 'eclipsesSun' : 'eclipsesMoon')
+      )
     )
   } catch (err) {
     console.log(err)
