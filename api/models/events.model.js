@@ -24,37 +24,12 @@ const eventSchema = new Mongoose.Schema({
     ],
     required: true,
   },
-  moon: {
-    type: String,
-    //********************
-    // OJO -> TODO find enum values in api
-    /*enum: [
-      'Nueva',
-      'Cuarto creciente',
-      'Gibosa creciente',
-      'Llena',
-      'Gibosa menguante',
-      'Cuarto menguante',
-    ],*/
-    required: true,
-  },
-  weather: {
-    type: String,
-    //********************
-    // OJO -> TODO find enum values in api
-    //enum: []
-    required: true,
-  },
   comments: {
     type: [Mongoose.Types.ObjectId],
     required: false,
   },
   origData: {
     type: Mongoose.Types.ObjectId,
-    required: true,
-  },
-  img: {
-    type: String,
     required: true,
   },
 })
