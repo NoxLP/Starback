@@ -5,13 +5,13 @@ const {
   getAllComments,
   editComment,
   deleteComment,
-  responseComment,
+  replyComment,
 } = require('../controllers/comments.controller')
 
 router.post('/', authUser, postComment)
 router.get('/:eventId', authUser, getAllComments)
-router.put('/:commentId/', authUser, editComment)
-router.delete('/:commentId', authUser, deleteComment)
-router.post('/:commentId', authUser, responseComment)
+router.put('/:commentId/events/:eventId', authUser, editComment)
+router.delete('/:commentId/events/:eventId', authUser, deleteComment)
+router.post('/:commentId/events/:eventId', authUser, replyComment)
 
 module.exports = router

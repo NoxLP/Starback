@@ -1,5 +1,4 @@
 const { commentsModel } = require('../models/comments.model')
-const eventModel = require('../models/events.model')
 const eventsModel = require('../models/events.model')
 
 function paginate(array, limit, page) {
@@ -47,34 +46,60 @@ function getAllComments(req, res) {
     })
 }
 
-function editComment(req, res) {
-  commentsModel
-    .findByIdAndUpdate(req.params.commentId, req.body, {
-      new: true,
-      runValidators: true,
-    })
-    .then((comment) => {
-      console.log('Comentario editado', comment)
-      res.status(200).json(comment)
-    })
-    .catch((err) => {
+const findCommentIndex = (event, commentId, eventId) => {
+  let comment = event.comments.id(commentId)
+  // console.log('comment: ', comment)
+
+  if (!comment) {
+    return -1
+  }
+
+  let index = event.comments.indexOf(comment)
+  return index
+}
+async function editComment(req, res) {
+  try {
+    const event = await eventsModel.findById(req.params.eventId)
+    const comment = event.comments.id(req.params.commentId)
+    // console.log('comment: ', comment)
+
+    if (!comment) {
+      const err = `Comentario no existe en evento con id: ${req.params.eventId}`
+      console.log(err)
       res.status(500).send(err)
-      console.log('Error al editar el comentario: ', err)
-    })
+      return
+    }
+
+    let index = event.comments.indexOf(comment)
+    event.comments[index].text = req.body.text
+
+    await event.save()
+    res.status(200).json(comment)
+  } catch (err) {
+    res.status(500).send(err)
+    console.log('Error al editar el comentario: ', err)
+  }
 }
 
 async function deleteComment(req, res) {
   try {
-    let event = await eventModel.findById(req.body.event)
+    console.log('deleteComment')
+    let event = await eventsModel.findById(req.params.eventId)
+    // console.log('params: ', req.params)
+    // console.log('event: ', event)
+    // console.log('comments: ', event.comments)
 
-    let index = event.comments.findIndex((x) => x._id === req.params.commentId)
-    if (index === -1) {
-      let err = `Comentario no existe en evento con id: ${req.body.event}`
+    let comment = event.comments.id(req.params.commentId)
+    // console.log('comment: ', comment)
+
+    if (!comment) {
+      let err = `Comentario no existe en evento con id: ${req.params.eventId}`
       console.log(err)
       res.status(500).send(err)
+      return
     }
-    const comment = event.comments[index]
 
+    let index = event.comments.indexOf(comment)
     event.comments.splice(index, 1)
     console.log('comment removed: ', event.comments)
 
@@ -89,14 +114,14 @@ async function deleteComment(req, res) {
   }
 }
 
-async function responseComment(req, res) {
+async function replyComment(req, res) {
   try {
     let response = commentsModel.create(req.body)
     let parent = commentsModel.findById(req.params.commentId)
 
-    let responseComment = await Promise.all([response, parent])
-    response = responseComment[0]
-    parent = responseComment[1]
+    let replyComment = await Promise.all([response, parent])
+    response = replyComment[0]
+    parent = replyComment[1]
     parent.responses.push(response)
     await parent.save()
 
@@ -113,5 +138,5 @@ module.exports = {
   getAllComments,
   editComment,
   deleteComment,
-  responseComment,
+  replyComment,
 }

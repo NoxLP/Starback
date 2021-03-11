@@ -32,10 +32,10 @@ const eventSchema = new Mongoose.Schema({
   },
   origData: {
     type: Mongoose.Types.ObjectId,
-    required: true,
+    // required: true,
   },
 })
 
-const eventModel = Mongoose.model('event', eventSchema)
+const eventsModel = Mongoose.model('event', eventSchema)
 
-module.exports = eventModel
+module.exports = eventsModel
