@@ -19,6 +19,7 @@ async function postComment(req, res) {
     const event = await eventsModel.findById(req.body.event)
     const comment = req.body
     console.log(event)
+
     event.comments.push(comment)
     await event.save()
 
@@ -65,8 +66,8 @@ function editComment(req, res) {
 async function deleteComment(req, res) {
   try {
     let event = await eventModel.findById(req.body.event)
-    /*
-    let index = event.comments.findIndex(x => x._id === req.params.commentId)
+
+    let index = event.comments.findIndex((x) => x._id === req.params.commentId)
     if (index === -1) {
       let err = `Comentario no existe en evento con id: ${req.body.event}`
       console.log(err)
@@ -75,9 +76,9 @@ async function deleteComment(req, res) {
     const comment = event.comments[index]
 
     event.comments.splice(index, 1)
-    console.log('comment removed: ', event.comments)*/
+    console.log('comment removed: ', event.comments)
 
-    event.comments.pull(comment._id)
+    //event.comments.pull(comment._id)
     //comment.remove()
 
     await event.save()
