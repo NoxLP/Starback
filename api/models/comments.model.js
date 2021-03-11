@@ -13,7 +13,7 @@ const commentsSchema = new Mongoose.Schema({
     required: true,
   },
   responses: {
-    type: [commentsSchema],
+    type: [this],
   },
   likes: {
     type: [Mongoose.Types.ObjectId],
@@ -24,6 +24,9 @@ const commentsSchema = new Mongoose.Schema({
   },
 })
 
-const commentsModel = Mongoose.model('comments', eventSchema)
+const commentsModel = Mongoose.model('comments', commentsSchema)
 
-module.exports = commentsModel
+module.exports = {
+  commentsModel,
+  commentsSchema,
+}

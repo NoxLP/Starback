@@ -3,7 +3,7 @@ const router = require('express').Router()
 const authRouter = require('./auth.router')
 const eventsRouter = require('./events.router')
 const commentsRouter = require('./comments.router')
-const { authUser } = require('../utils') // Authenticated Route
+const { authUser } = require('../utils/index') // Authenticated Route
 
 router.use('/auth', authRouter)
 router.use('/events', authUser, eventsRouter)

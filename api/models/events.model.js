@@ -1,5 +1,7 @@
 const Mongoose = require('mongoose')
-const eventsSchema = new Mongoose.Schema({
+const { commentsSchema } = require('./comments.model')
+
+const eventSchema = new Mongoose.Schema({
   date: {
     type: Date,
     required: true,
@@ -13,25 +15,23 @@ const eventsSchema = new Mongoose.Schema({
     required: true,
   },
   category: {
-    type: Enumerator,
+    type: String,
+    enum: [
+      'eclipsesMoon',
+      'eclipsesSun',
+      'planets',
+      'meteorShowers',
+      'comets',
+      'conjunctions',
+    ],
     required: true,
   },
-  moon: {
-    type: Enumerator,
-    required: true,
+  comments: {
+    type: [commentsSchema],
+    required: false,
   },
-  weather: {
-    type: Enumerator,
-    required: true,
-  },
-  /*
-    comments: {
-      type: objectId,
-      requiered: true
-    }
-    */
 })
 
-const eventsModel = Mongoose.model('events', eventsSchema)
+const eventModel = Mongoose.model('event', eventSchema)
 
-module.exports = eventsModel
+module.exports = eventModel
