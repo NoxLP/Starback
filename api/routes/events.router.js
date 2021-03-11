@@ -1,13 +1,12 @@
 const router = require('express').Router()
-const { getEvent,
-        pushEvent,
-        getLastEvent,
-        getCategory 
-    } = require('../controllers/event.controller')
+const {
+  getEvent,
+  getLastEvents,
+  getTimelineDTOs,
+} = require('../controllers/event.controller')
 
 router.get('/:eventId', getEvent)
-router.put('/favourite/:eventId', pushEvent)
-router.get('/last', getLastEvent)
-router.get('/timelinedtos/:categoryName', getCategory)
+router.get('/last', getLastEvents)
+router.get('/timelinedtos/:categoryName', getTimelineDTOs)
 
 module.exports = router
