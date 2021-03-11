@@ -1,4 +1,6 @@
 const Mongoose = require('mongoose')
+const { commentsSchema } = require('./comments.model')
+
 const eventSchema = new Mongoose.Schema({
   date: {
     type: Date,
@@ -25,7 +27,7 @@ const eventSchema = new Mongoose.Schema({
     required: true,
   },
   comments: {
-    type: [Mongoose.Types.ObjectId],
+    type: [commentsSchema],
     required: false,
   },
   origData: {
