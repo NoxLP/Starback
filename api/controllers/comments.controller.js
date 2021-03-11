@@ -4,7 +4,7 @@ const eventsModel = require('./models/events.model')
 function postComment(req, res) {
   try {
     let create = commentsModel.create(req.body)
-    let find = eventsModel.findById(req.body.event)
+    let find = eventsModel.findById(req.params.eventId)
       
     let commentEvent = await Promise.all([create, find])
       let comment = commentEvent[0]
@@ -35,7 +35,7 @@ function getAllComments(req, res) {
 }
 
 function editComment(req, res) {
-    commentsModel
+  commentsModel
     .findByIdAndUpdate(req.params.commentId, req.body, {
         new: true,
         runValidators: true
@@ -48,4 +48,37 @@ function editComment(req, res) {
       res.status(500).send(err)
       console.log('Error al editar el comentario')
     })
+}
+
+function deleteComment(req, res) {
+  commentsModel
+    .deleteOne(req.params.commentId)
+    .then((comment) => {
+      console.log('Comentario borrado', comment)
+      res.status(200).json(comment)
+    })
+    .catch((err) => {
+      res.status(500).send(err)
+      console.log('Error al borrar el comentario')
+    })
+}
+
+function responseComment(req, res) {
+  try {
+    let response = commentsModel.create(req.body)
+    let find = commentsModel.findById(req.params.commentId)
+      
+    let responseComment = await Promise.all([response, find])
+      let response = responseComment[0]
+      let comment = responseComment[1]
+      comment.responses.push(response)
+      await response.save()
+    
+    console.log('Respuesta creada', response)
+    res.status(200).json(response)
+  } catch (err) {
+      
+    res.status(500).send(err)
+    console.log('Error creando respuesta')
+  }
 }
