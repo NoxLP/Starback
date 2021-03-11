@@ -1,4 +1,3 @@
-const { commentsModel } = require('../models/comments.model')
 const eventsModel = require('../models/events.model')
 
 function paginate(array, limit, page) {
@@ -28,6 +27,72 @@ async function postComment(req, res) {
     res.status(500).send(err)
     console.log('Error creando comentario: ', err)
   }
+}
+
+function replyComment(req, res){
+  eventsModel
+    .findById(req.query.eventId)
+    .then((event) => {
+      const parent= event.comments.id(req.query.parentId)
+      parent.responses.push(req.body)
+      event.save()
+      .then((somevent) =>{
+      res.status(200).json(req.body)
+      })
+      .catch((err) => {
+        res.status(500).send(err)
+        console.log('Error', err)
+      })
+    })
+    .catch((err) => {
+      res.status(500).send(err)
+      console.log('Error cargando respuestas: ', err)
+    })
+}
+
+function editReply(req, res){
+  eventsModel
+    .findById(req.query.eventId)
+    .then((event)=> {
+      const parent= event.comments.id(req.query.parentId)
+      const child= parent.responses.id(req.query.replyId)
+      child.text= req.body.text
+      event.save()
+      .then((somevent)=> {
+        res.status(200).json(req.body)
+      })
+      .catch((err)=> {
+        res.status(500).send(err)
+        console.log('Error', err)
+      })
+    })
+    .catch((err)=> {
+      res.status(500).send(err)
+      console.log('Error editando respuesta: ', err)
+    })
+}
+
+function deleteReply(req, res){
+  eventsModel
+    .findById(req.query.eventId)
+    .then((event)=> {
+      const parent= event.comments.id(req.query.parentId)
+      const child= parent.responses.id(req.query.replyId)
+      let index = parent.responses.indexOf(child)
+      responses.splice(index,1)
+      event.save()
+      .then((somevent)=> {
+        res.status(200).json(req.body)
+      })
+      .catch((err)=> {
+        res.status(500).send(err)
+        console.log('Error', err)
+      })
+    })
+    .catch((err)=> {
+      res.status(500).send(err)
+      console.log('Error eliminando respuesta: ', err)
+    })
 }
 
 function getAllComments(req, res) {
@@ -114,7 +179,7 @@ async function deleteComment(req, res) {
   }
 }
 
-async function replyComment(req, res) {
+/*async function replyComment(req, res) {
   try {
     let response = commentsModel.create(req.body)
     let parent = commentsModel.findById(req.params.commentId)
@@ -131,7 +196,7 @@ async function replyComment(req, res) {
     res.status(500).send(err)
     console.log('Error creando respuesta: ', err)
   }
-}
+}*/
 
 module.exports = {
   postComment,
@@ -139,4 +204,6 @@ module.exports = {
   editComment,
   deleteComment,
   replyComment,
+  editReply,
+  deleteReply
 }
