@@ -7,13 +7,26 @@ const moonApi = axios.create({
   timeout: 3000,
 })
 const weatherApi = axios.create({
-  baseURL: 'https://api.openweathermap.org/data/2.5/onecall',
+  baseURL: 'https://api.openweathermap.org/data/2.5/',
   timeout: 3000,
 })
 const imgApi = axios.create({
   baseURL: 'http://astrobin.com/api/v1/image',
   timeout: 10000,
 })
+const INTERCEPT_AXIOS = false
+
+if (INTERCEPT_AXIOS) {
+  weatherApi.interceptors.request.use((request) => {
+    console.log('Starting Request', JSON.stringify(request, null, 2))
+    return request
+  })
+
+  weatherApi.interceptors.response.use((response) => {
+    console.log('Received response:', JSON.stringify(response, null, 2))
+    return response
+  })
+}
 //#endregion
 
 //#region helpers
@@ -24,48 +37,44 @@ const buildTimelineDTO = (event) => {
   }
 }
 const filterNearestDayWeatherData = (weather, date) => {
+  console.log(weather)
+  console.log('filterNearestDayWeatherData')
   const dateTimestamp = new Date(
     Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
   ).getTime()
 
   const exactDayIndex = weather.daily.findIndex((x) => x.dt === dateTimestamp)
+  console.log('************ dayIndex: ', exactDayIndex)
   if (exactDayIndex !== -1) {
+    console.log(
+      '************ ¡exact day!: ',
+      weather.daily[exactDayIndex].weather.description
+    )
     return weather.daily[exactDayIndex].weather.description
   } else {
-    const nextDayTimestamp = new Date(
+    const nextDay = new Date(
       Date.UTC(date.getFullYear(), date.getMonth(), date.getDate() + 1)
-    ).getTime()
-
+    )
+    console.log(
+      '************ NO exact day, current day: ' +
+        new Date(
+          Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+        ) +
+        '\n ;  next day: ' +
+        nextDay
+    )
     for (let day of weather.daily) {
-      if (day.dt >= dateTimestamp && day.dt <= nextDayTimestamp)
-        return day.weather.description
+      console.log('------ current day timeStamp: ', date)
+      let d = new Date(day.dt * 1000)
+      console.log('------ day: ', d)
+      console.log('------ next day timeStamp: ', nextDay)
+
+      if (d >= date && d <= nextDay) {
+        console.log('------ ENCONTRADO: ', day.weather)
+        return day.weather[0].description
+      }
     }
 
-    return null
-  }
-}
-const getWeatherData = async (coords, date) => {
-  //weather api only covers 7 days after now
-  if (date.getDate() > new Date(Date.now()).getDate() + 7) return null
-  //********************/
-
-  const lat = coords[0]
-  const lon = coords[1]
-
-  try {
-    let weather = (
-      await weatherApi.get('/', {
-        params: {
-          lat: lat,
-          lon: lon,
-          appid: process.env.WEATHER_API_KEY,
-        },
-      })
-    ).data
-
-    return filterNearestDayWeatherData(weather, date)
-  } catch (err) {
-    console.log('error in weather api: ', err)
     return null
   }
 }
@@ -155,7 +164,7 @@ async function getEventMoonPhase(req, res) {
       await moonApi.get('/', {
         params: { d: event.date.getTime() },
       })
-    ).data[0].phase
+    ).data[0].Phase
 
     res.status(200).json(moon)
   } catch (err) {
@@ -172,7 +181,7 @@ async function getEventImage(req, res) {
     searchParams['api_key'] = process.env.IMAGE_API_KEY
     searchParams['api_secret'] = process.env.IMAGE_API_SECRET
     searchParams['format'] = 'json'
-    searchParams['limit'] = 100
+    searchParams['limit'] = 20
     console.log(searchParams)
 
     const imageData = (
@@ -180,8 +189,10 @@ async function getEventImage(req, res) {
         params: searchParams,
       })
     ).data
-
-    if (!imageData || imageData.objects.len === 0) return null
+    console.log(imageData)
+    if (!imageData || imageData.objects.len === 0) {
+      res.status(404).json("event's image not found")
+    }
 
     const randomImage =
       imageData.objects[Math.floor(Math.random() * imageData.objects.length)]
@@ -217,20 +228,21 @@ async function getEventWeather(req, res) {
     }
     //********************/
 
-    const lat = req.query.lat
-    const lon = req.query.lon
+    const latitude = req.query.lat
+    const longitude = req.query.lon
 
     const weather = (
-      await weatherApi.get('/', {
+      await weatherApi.get('onecall', {
         params: {
-          lat: lat,
-          lon: lon,
+          lat: latitude,
+          lon: longitude,
           appid: process.env.WEATHER_API_KEY,
         },
       })
     ).data
-
+    console.log(weather)
     const data = filterNearestDayWeatherData(weather, event.date)
+    console.log('data after filter: ', data)
     res.status(200).json(data)
   } catch (err) {
     console.log('error in weather api: ', err)
