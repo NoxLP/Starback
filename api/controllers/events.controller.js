@@ -12,7 +12,7 @@ const weatherApi = axios.create({
 })
 const imgApi = axios.create({
   baseURL: 'http://astrobin.com/api/v1/image',
-  timeout: 3000,
+  timeout: 10000,
 })
 //#endregion
 
@@ -66,7 +66,7 @@ const getWeatherData = async (coords, date) => {
 
   try {
     let weather = (
-      await weatherApi.get('https://api.openweathermap.org/data/2.5/onecall', {
+      await weatherApi.get('/', {
         params: {
           lat: lat,
           lon: lon,
@@ -109,13 +109,14 @@ const buildImageSearchParams = (event) => {
 const getImageData = async (event) => {
   try {
     const searchParams = buildImageSearchParams(event)
-    searchParams[api_key] = process.env.IMAGE_API_KEY
-    searchParams[api_secret] = process.env.IMAGE_API_SECRET
-    searchParams[format] = 'json'
-    searchParams[limit] = 100
+    searchParams['api_key'] = process.env.IMAGE_API_KEY
+    searchParams['api_secret'] = process.env.IMAGE_API_SECRET
+    searchParams['format'] = 'json'
+    searchParams['limit'] = 100
+    console.log(searchParams)
 
     const imageData = (
-      await imgApi.get('http://astrobin.com/api/v1/image/', {
+      await imgApi.get('/', {
         params: searchParams,
       })
     ).data
@@ -148,13 +149,13 @@ const getImageData = async (event) => {
 //#endregion
 
 async function getLastEvents(req, res) {
-  const first = new Date(Date.now())
-  const last = new Date(first.setMonth(first.getMonth() + 1))
+  const now = new Date(Date.now())
 
   try {
     const event = await eventsModel
-      .find({ date: { $gte: first, $lt: last } })
+      .find({ date: { $gte: now } })
       .sort({ date: 1 })
+      .limit(4)
 
     res.status(200).json(event)
   } catch (err) {
@@ -164,12 +165,16 @@ async function getLastEvents(req, res) {
 }
 async function getTimelineDTOs(req, res) {
   const categoryName = req.params.categoryName
-  const limit = req.query.limit
+  const limit = parseInt(req.query.limit)
+  const page = parseInt(req.query.page)
 
   try {
-    let events = await eventsModel.find({ category: categoryName }).limit(limit)
+    let events = await eventsModel
+      .find({ category: categoryName })
+      .limit(limit)
+      .skip(limit * page)
 
-    events.map((event) => buildTimelineDTO(event))
+    events = events.map((event) => buildTimelineDTO(event))
 
     res.status(200).json(events)
   } catch (err) {
@@ -188,6 +193,7 @@ coords: ${coords}
   try {
     const event = await eventsModel.findById(eventId)
 
+    // console.log('event: ', event)
     if (!event) {
       const err = 'Event not found'
       console.log(err)
@@ -196,18 +202,21 @@ coords: ${coords}
     }
 
     const dataPromises = [
-      getMoonData(event),
+      getMoonData(event).catch((err) => null),
       coords ? getWeatherData(coords, event.date) : null,
-      getImageData(event),
-    ].map((x) => x.catch((err) => null))
+      getImageData(event).catch((err) => null),
+    ]
 
     const data = await Promise.all(dataPromises)
-    return {
-      ...event,
+    console.log('data: ', data)
+    let object = {
+      ...event._doc,
       moon: data[0],
       weather: data[1],
       img: data[2],
     }
+    console.log('object: ', object)
+    res.status(200).json(object)
   } catch (err) {
     console.log('get last event error: ', err)
     res.status(400).json(err)
