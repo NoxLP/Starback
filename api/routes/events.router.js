@@ -3,7 +3,7 @@ const {
   getEvent,
   getLastEvents,
   getTimelineDTOs,
-} = require('../controllers/event.controller')
+} = require('../controllers/events.controller')
 
 router.get('/:eventId', getEvent)
 router.get('/last', getLastEvents)

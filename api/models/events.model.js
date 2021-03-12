@@ -32,7 +32,7 @@ const eventSchema = new Mongoose.Schema({
   },
   origData: {
     type: Mongoose.Types.ObjectId,
-    required: true,
+    // required: true,
   },
 })
 
