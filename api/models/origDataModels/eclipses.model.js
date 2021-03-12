@@ -15,7 +15,7 @@ const eclipsesSchema = new Mongoose.Schema({
     required: true,
   },
   time: {
-    type: Date,
+    type: String,
     required: true,
   },
   coorsZodiac: {

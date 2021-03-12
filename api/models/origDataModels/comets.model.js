@@ -33,15 +33,15 @@ const cometsSchema = new Mongoose.Schema({
     required: true,
   },
   visibleFrom: {
-    type: Date,
+    type: String,
     required: true,
   },
   visibleUntil: {
-    type: Date,
+    type: String,
     required: true,
   },
   highest: {
-    type: Date,
+    type: String,
     required: true,
   },
   ra: {

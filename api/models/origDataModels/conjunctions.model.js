@@ -35,6 +35,6 @@ const conjunctionsSchema = new Mongoose.Schema({
   },
 })
 
-const conjunctionsModel = Mongoose.model('event', conjunctionsSchema)
+const conjunctionsModel = Mongoose.model('conjunctions', conjunctionsSchema)
 
 module.exports = conjunctionsModel

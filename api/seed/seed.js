@@ -59,7 +59,7 @@ mongoose.connect(
 
 //#region helpers
 const getPlanetPrettyName = (planet) => PLANETS_PRETTY[PLANETS.indexOf(planet)]
-const buildEventTitle = (ephem, category, ephem2) => {
+const buildEventTitle = (ephem, category) => {
   let title
   switch (category) {
     case 'planets':
@@ -78,19 +78,22 @@ const buildEventTitle = (ephem, category, ephem2) => {
       title = ephem.object
       break
     case 'conjunctions':
-      title = `Alineación ${ephem.planet1} ${ephem2.planet2}`
+      title = `Alineación ${ephem.planet1} ${ephem.planet2}`
       break
   }
   return title
 }
-const buildEventDescription = (ephem, category, ephem2) => {
+const buildEventDescription = (ephem, category) => {
   //TODO => localizar a español las strings pretinentes
   let description
   switch (category) {
     case 'planets':
+      /*console.log('ephem ', ephem)
+      console.log('date ', ephem.date)
+      console.log('date is ', ephem.date instanceof Date)*/
       description = `${getPlanetPrettyName(
         ephem.name
-      )} será visible en ${new Date(ephem.date).toLocaleString(
+      )} será visible en ${ephem.date.toLocaleString(
         'es-ES',
         DATE_PRETTY_CONFIG
       )} con magnitud ${ephem.mag}.
@@ -137,11 +140,8 @@ Brillo aparente: ${ephem.rating}`
   A partir del ${new Date(ephem.date).toLocaleString(
     'es-ES',
     DATE_PRETTY_CONFIG
-  )()}.
-Perihelio: ${new Date(ephem.peDate).toLocaleString(
-        'es-ES',
-        DATE_PRETTY_CONFIG
-      )()}
+  )}.
+Perihelio: ${new Date(ephem.peDate).toLocaleString('es-ES', DATE_PRETTY_CONFIG)}
 Ascensión recta: ${ephem.ra}
 Constelación: ${ephem.constellation}
 Visible desde las ${ephem.visibleFrom} hasta las ${ephem.visibleUntil}
@@ -149,8 +149,8 @@ Magnitud aparente antes del perihelio: ${ephem.peMa}`
       break
     case 'conjunctions':
       description = `Conjunción de ${ephem.planet1} y ${
-        ephem2.planet2
-      }, el día ${ephem.date.toLocaleString('es-ES', DATE_PRETTY_CONFIG)()}.
+        ephem.planet2
+      }, el ${ephem.date.toLocaleString('es-ES', DATE_PRETTY_CONFIG)}.
 Ascensión recta: ${ephem.ra}
 Declinación: ${ephem.dec}
 Magnitud aparente: ${ephem.mag}`
@@ -161,10 +161,10 @@ Magnitud aparente: ${ephem.mag}`
 const buildEvent = (ephem, category) => {
   return {
     date: new Date(ephem.date),
-    title: buildEventTitle(ephem),
-    description: buildEventDescription(ephem),
+    title: buildEventTitle(ephem, category),
+    description: buildEventDescription(ephem, category),
     category: category,
-    origData: ephem,
+    origData: mongoose.Types.ObjectId(ephem._id),
   }
 }
 //#endregion
@@ -207,10 +207,10 @@ async function buildPlanetsEvents_2021_2022() {
   )
 
   //TODO: just for testing, deleteme *********/
-  /*fs.writeFileSync(
+  fs.writeFileSync(
     './testPlanets.json',
     JSON.stringify(filteredEphemerides.flat(5), null, 2)
-  )*/
+  )
   //console.log(filteredEphemerides)
   //******************************************/
 
@@ -248,14 +248,14 @@ async function buildPlanetsEvents_2021_2022() {
 
   //https://stackoverflow.com/questions/16726330/mongoose-mongodb-batch-insert
 
-  const events = filteredEphemerides.map((ephem) =>
-    buildEvent(ephem, 'planets')
-  )
+  const events = filteredEphemerides
+    .flat(5)
+    .map((ephem) => buildEvent(ephem, 'planets'))
 
   try {
-    await eventsModel.bulkWrite(events)
+    await eventsModel.insertMany(events)
   } catch (err) {
-    console.log(err)
+    console.log('error building planets ', err)
     return false
   }
 
@@ -266,11 +266,11 @@ async function buildCometsEvents() {
   try {
     let comets = await cometsModel.find()
 
-    await eventsModel.bulkWrite(
+    await eventsModel.insertMany(
       comets.map((ephem) => buildEvent(ephem, 'comets'))
     )
   } catch (err) {
-    console.log(err)
+    console.log('error building comets ', err)
     return false
   }
 
@@ -281,36 +281,28 @@ async function buildEclipsesEvents() {
   try {
     let eclipses = await eclipsesModel.find()
 
-    await eventsModel.bulkWrite(
+    await eventsModel.insertMany(
       eclipses.map((ephem) =>
         buildEvent(ephem, ephem.sl === 'Solar' ? 'eclipsesSun' : 'eclipsesMoon')
       )
     )
   } catch (err) {
-    console.log(err)
+    console.log('error building eclipses ', err)
     return false
   }
 
   return true
 }
-async function buildMeteorSEvents() {
+async function buildMeteorsEvents() {
   console.log('build meteor showers events')
   try {
     let meteorShowers = await meteorShowersModel.find()
 
-    await eventsModel.bulkWrite(
-      meteorShowers.map((ephem) => {
-        return {
-          date: new Date(ephem.dateMin),
-          title: buildEventTitle(ephem),
-          description: buildEventDescription(ephem),
-          category: 'meteorShowers',
-          origData: ephem,
-        }
-      })
+    await eventsModel.insertMany(
+      meteorShowers.map((ephem) => buildEvent(ephem, 'meteorShowers'))
     )
   } catch (err) {
-    console.log(err)
+    console.log('error building meteorS ', err)
     return false
   }
 
@@ -321,16 +313,8 @@ async function buildConjunctionEvents() {
   try {
     let conjunctions = await conjunctionsModel.find()
 
-    await eventsModel.bulkWrite(
-      conjunctions.map((ephem) => {
-        return {
-          date: new Date(ephem.dateMin),
-          title: buildEventTitle(ephem),
-          description: buildEventDescription(ephem),
-          category: 'conjunctions',
-          origData: ephem,
-        }
-      })
+    await eventsModel.insertMany(
+      conjunctions.map((ephem) => buildEvent(ephem, 'conjunctions'))
     )
   } catch (err) {
     console.log(err)
@@ -346,9 +330,21 @@ async function buildConjunctionEvents() {
     buildPlanetsEvents_2021_2022(),
     buildCometsEvents(),
     buildEclipsesEvents(),
-    buildMeteorSEvents(),
+    buildMeteorsEvents(),
     buildConjunctionEvents(),
   ])
 
   await mongoose.connection.close()
 })()
+
+/*;(function testObjectsArray() {
+  conjunctionsModel.find().then((conjunctions) => {
+    console.log(
+      JSON.stringify(
+        conjunctions.map((ephem) => buildEvent(ephem, 'conjunctions')),
+        null,
+        2
+      )
+    )
+  })
+})()*/
