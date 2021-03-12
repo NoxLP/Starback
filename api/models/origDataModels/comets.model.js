@@ -5,7 +5,7 @@ const cometsSchema = new Mongoose.Schema({
     required: true,
   },
   peDate: {
-    type: Date,
+    type: String,
     required: true,
   },
   peRa: {
@@ -25,7 +25,7 @@ const cometsSchema = new Mongoose.Schema({
     required: true,
   },
   date: {
-    type: Date,
+    type: String,
     required: true,
   },
   constellation: {

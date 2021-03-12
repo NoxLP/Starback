@@ -1,4 +1,5 @@
 const Mongoose = require('mongoose')
+
 const commentsSchema = new Mongoose.Schema({
   user: {
     type: Mongoose.Types.ObjectId,

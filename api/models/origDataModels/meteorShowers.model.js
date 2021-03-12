@@ -5,7 +5,7 @@ const meteorShowersSchema = new Mongoose.Schema({
     required: true,
   },
   dateMin: {
-    type: Date,
+    type: String,
     required: true,
   },
   dateMax: {
@@ -13,7 +13,7 @@ const meteorShowersSchema = new Mongoose.Schema({
     required: true,
   },
   peak: {
-    type: Date,
+    type: String,
     required: true,
   },
   ra: {
@@ -29,6 +29,7 @@ const meteorShowersSchema = new Mongoose.Schema({
     required: true,
   },
   rating: {
+    type: String,
     enum: ['bright', 'medium', 'faint'],
     required: true,
   },

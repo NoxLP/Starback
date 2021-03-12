@@ -4,24 +4,6 @@ const mongoose = require('mongoose')
 const path = require('path')
 const fs = require('fs')
 
-// MONGOOSE
-mongoose.connect(
-  process.env.MONGO_URL,
-  {
-    dbName: process.env.MONGO_DB || 'test',
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-  },
-  (err) => {
-    if (err) {
-      throw new Error(err)
-    }
-    console.info('💾 Connected to Mongo Database \n')
-  }
-)
-
 const planetsModel = require('../models/origDataModels/planets.model')
 const cometsModel = require('../models/origDataModels/comets.model')
 const eclipsesModel = require('../models/origDataModels/eclipses.model')
@@ -40,7 +22,7 @@ const PLANETS = [
   'neptune',
   'pluto',
 ]
-const PLANETS_SPANISH = [
+const PLANETS_PRETTY = [
   'mercurio',
   'venus',
   'marte',
@@ -50,13 +32,39 @@ const PLANETS_SPANISH = [
   'neptuno',
   'plutón',
 ]
+const DATE_PRETTY_CONFIG = {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+}
+
+// MONGOOSE
+mongoose.connect(
+  process.env.MONGO_URL,
+  {
+    dbName: process.env.MONGO_DB || 'test',
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+  },
+  (err) => {
+    if (err) {
+      throw new Error(err)
+    }
+    console.info('💾 Connected to Mongo Database \n')
+  }
+)
 
 //#region helpers
+const getPlanetPrettyName = (planet) => PLANETS_PRETTY[PLANETS.indexOf(planet)]
 const buildEventTitle = (ephem, category, ephem2) => {
-  //TODO => localizar a español las strings pretinentes
   let title
   switch (category) {
     case 'planets':
+      title = getPlanetPrettyName(ephem.name)
+      break
     case 'meteorShowers':
       title = ephem.name
       break
@@ -70,7 +78,7 @@ const buildEventTitle = (ephem, category, ephem2) => {
       title = ephem.object
       break
     case 'conjunctions':
-      title = `Alineación ${ephem.name} ${ephem2.name}`
+      title = `Alineación ${ephem.planet1} ${ephem2.planet2}`
       break
   }
   return title
@@ -80,39 +88,60 @@ const buildEventDescription = (ephem, category, ephem2) => {
   let description
   switch (category) {
     case 'planets':
-      description = `${
+      description = `${getPlanetPrettyName(
         ephem.name
-      } será visible en ${ephem.date.toLocaleString()} con magnitud ${
-        ephem.mag
-      }.
+      )} será visible en ${new Date(ephem.date).toLocaleString(
+        'es-ES',
+        DATE_PRETTY_CONFIG
+      )} con magnitud ${ephem.mag}.
 Ascensión recta: ${ephem.ra}
 Declinación: ${ephem.dec}`
       break
     case 'eclipsesMoon':
       description = `Eclipse ${ephem.type}.
-Será visible en ${ephem.date.toLocaleString()} a las ${ephem.time.toLocaleTimeString()} con magnitud ${
-        ephem.magnitude
-      }.
+Será visible el ${new Date(ephem.date).toLocaleString(
+        'es-ES',
+        DATE_PRETTY_CONFIG
+      )} a las ${ephem.time} con magnitud ${ephem.magnitude}.
 Coordenadas: ${ephem.coorsZodiac}`
       break
     case 'eclipsesSun':
       description = `Eclipse ${ephem.type}.
-Será visible en ${ephem.date.toLocaleString()} a las ${ephem.time.toLocaleTimeString()} con magnitud ${
-        ephem.magnitude
-      }.
+Será visible el ${new Date(ephem.date).toLocaleString(
+        'es-ES',
+        DATE_PRETTY_CONFIG
+      )} a las ${ephem.time} con magnitud ${ephem.magnitude}.
 Coordenadas: ${ephem.coorsZodiac}`
       break
     case 'meteorShowers':
+      const min = new Date(ephem.dateMin)
+      min.setFullYear(2021)
+      const max = new Date(ephem.dateMax)
+      max.setFullYear(2021)
+      const peak = new Date(ephem.peak)
+      peak.setFullYear(2021)
       description = `${ephem.name}.
-  Entre ${ephem.dateMin.toLocaleString()} y ${ephem.dateMax.toLocaleString()} con máximo el día ${ephem.peak.toLocaleString()}.
+  Entre ${min.toLocaleString(
+    'es-ES',
+    DATE_PRETTY_CONFIG
+  )} y ${max.toLocaleString(
+        'es-ES',
+        DATE_PRETTY_CONFIG
+      )} con máximo el día ${peak.toLocaleString('es-ES', DATE_PRETTY_CONFIG)}.
 Ascensión recta: ${ephem.ra}
 Declinación: ${ephem.dec}
 Brillo aparente: ${ephem.rating}`
       break
     case 'comets':
       description = `${ephem.object}.
-  A partir del ${ephem.date.toLocaleString()}.
-Perihelio: ${ephem.peDate.toLocaleString()}
+  A partir del ${new Date(ephem.date).toLocaleString(
+    'es-ES',
+    DATE_PRETTY_CONFIG
+  )()}.
+Perihelio: ${new Date(ephem.peDate).toLocaleString(
+        'es-ES',
+        DATE_PRETTY_CONFIG
+      )()}
 Ascensión recta: ${ephem.ra}
 Constelación: ${ephem.constellation}
 Visible desde las ${ephem.visibleFrom} hasta las ${ephem.visibleUntil}
@@ -121,7 +150,7 @@ Magnitud aparente antes del perihelio: ${ephem.peMa}`
     case 'conjunctions':
       description = `Conjunción de ${ephem.planet1} y ${
         ephem2.planet2
-      }, el día ${ephem.date.toLocaleString()}.
+      }, el día ${ephem.date.toLocaleString('es-ES', DATE_PRETTY_CONFIG)()}.
 Ascensión recta: ${ephem.ra}
 Declinación: ${ephem.dec}
 Magnitud aparente: ${ephem.mag}`
