@@ -214,12 +214,6 @@ coords: ${coords}
   }
 }
 
-/*
-getEvent,
-  pushEvent,
-  getLastEvent,
-  getTimelineDTOs,
-*/
 module.exports = {
   getLastEvents,
   getTimelineDTOs,
