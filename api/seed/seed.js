@@ -26,6 +26,7 @@ const planetsModel = require('../models/origDataModels/planets.model')
 const cometsModel = require('../models/origDataModels/comets.model')
 const eclipsesModel = require('../models/origDataModels/eclipses.model')
 const meteorShowersModel = require('../models/origDataModels/meteorShowers.model')
+const conjunctionsModel = require('../models/origDataModels/conjunctions.model')
 
 const eventsModel = require('../models/events.model')
 
@@ -118,8 +119,8 @@ Visible desde las ${ephem.visibleFrom} hasta las ${ephem.visibleUntil}
 Magnitud aparente antes del perihelio: ${ephem.peMa}`
       break
     case 'conjunctions':
-      description = `Conjunción de ${ephem.name} y ${
-        ephem2.name
+      description = `Conjunción de ${ephem.planet1} y ${
+        ephem2.planet2
       }, el día ${ephem.date.toLocaleString()}.
 Ascensión recta: ${ephem.ra}
 Declinación: ${ephem.dec}
@@ -286,6 +287,29 @@ async function buildMeteorSEvents() {
 
   return true
 }
+async function buildConjunctionEvents() {
+  console.log('build conjunction events')
+  try {
+    let conjunctions = await conjunctionsModel.find()
+
+    await eventsModel.bulkWrite(
+      conjunctions.map((ephem) => {
+        return {
+          date: new Date(ephem.dateMin),
+          title: buildEventTitle(ephem),
+          description: buildEventDescription(ephem),
+          category: 'conjunctions',
+          origData: ephem,
+        }
+      })
+    )
+  } catch (err) {
+    console.log(err)
+    return false
+  }
+
+  return true
+}
 //#endregion
 
 ;(async function executeSeedScript() {
@@ -294,6 +318,7 @@ async function buildMeteorSEvents() {
     buildCometsEvents(),
     buildEclipsesEvents(),
     buildMeteorSEvents(),
+    buildConjunctionEvents(),
   ])
 
   await mongoose.connection.close()
