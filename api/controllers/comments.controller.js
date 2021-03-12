@@ -29,20 +29,24 @@ async function postComment(req, res) {
   }
 }
 
-function replyComment(req, res){
+function replyComment(req, res) {
+  console.log('replyComment')
   eventsModel
     .findById(req.query.eventId)
     .then((event) => {
-      const parent= event.comments.id(req.query.parentId)
+      const parent = event.comments.id(req.query.parentId)
       parent.responses.push(req.body)
-      event.save()
-      .then((somevent) =>{
-      res.status(200).json(req.body)
-      })
-      .catch((err) => {
-        res.status(500).send(err)
-        console.log('Error', err)
-      })
+      const index = parent.responses.indexOf(req.body)
+      parent.responses[index]['index'] = index
+      event
+        .save()
+        .then((somevent) => {
+          res.status(200).json(parent.responses[index])
+        })
+        .catch((err) => {
+          res.status(500).send(err)
+          console.log('Error', err)
+        })
     })
     .catch((err) => {
       res.status(500).send(err)
@@ -50,46 +54,51 @@ function replyComment(req, res){
     })
 }
 
-function editReply(req, res){
+function editReply(req, res) {
+  console.log('editReply ', req.body)
   eventsModel
     .findById(req.query.eventId)
-    .then((event)=> {
-      const parent= event.comments.id(req.query.parentId)
-      const child= parent.responses.id(req.query.replyId)
-      child.text= req.body.text
-      event.save()
-      .then((somevent)=> {
-        res.status(200).json(req.body)
-      })
-      .catch((err)=> {
-        res.status(500).send(err)
-        console.log('Error', err)
-      })
+    .then((event) => {
+      const parent = event.comments.id(req.query.parentId)
+      const child = parent.responses[req.query.index]
+      child.text = req.body.text
+      parent.markModified('responses' + req.query.index)
+      event
+        .save()
+        .then((somevent) => {
+          res.status(200).json(child)
+        })
+        .catch((err) => {
+          res.status(500).send(err)
+          console.log('Error', err)
+        })
     })
-    .catch((err)=> {
+    .catch((err) => {
       res.status(500).send(err)
       console.log('Error editando respuesta: ', err)
     })
 }
 
-function deleteReply(req, res){
+function deleteReply(req, res) {
+  console.log('deleteReply')
   eventsModel
     .findById(req.query.eventId)
-    .then((event)=> {
-      const parent= event.comments.id(req.query.parentId)
-      const child= parent.responses.id(req.query.replyId)
-      let index = parent.responses.indexOf(child)
-      responses.splice(index,1)
-      event.save()
-      .then((somevent)=> {
-        res.status(200).json(req.body)
-      })
-      .catch((err)=> {
-        res.status(500).send(err)
-        console.log('Error', err)
-      })
+    .then((event) => {
+      const parent = event.comments.id(req.query.parentId)
+      const child = parent.responses[req.query.index]
+      parent.responses.splice(req.query.index, 1)
+      parent.markModified('responses' + req.query.index)
+      event
+        .save()
+        .then((somevent) => {
+          res.status(200).json(child)
+        })
+        .catch((err) => {
+          res.status(500).send(err)
+          console.log('Error', err)
+        })
     })
-    .catch((err)=> {
+    .catch((err) => {
       res.status(500).send(err)
       console.log('Error eliminando respuesta: ', err)
     })
@@ -205,5 +214,5 @@ module.exports = {
   deleteComment,
   replyComment,
   editReply,
-  deleteReply
+  deleteReply,
 }
