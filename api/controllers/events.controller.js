@@ -23,18 +23,6 @@ const buildTimelineDTO = (event) => {
     title: event.title,
   }
 }
-const getMoonData = async (event) => {
-  try {
-    return (
-      await moonApi.get('/', {
-        params: { d: event.date.getTime() },
-      })
-    ).data[0].phase
-  } catch (err) {
-    console.log('error in moon api: ', err)
-    return null
-  }
-}
 const filterNearestDayWeatherData = (weather, date) => {
   const dateTimestamp = new Date(
     Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
@@ -106,48 +94,9 @@ const buildImageSearchParams = (event) => {
       }
   }
 }
-const getImageData = async (event) => {
-  try {
-    const searchParams = buildImageSearchParams(event)
-    searchParams['api_key'] = process.env.IMAGE_API_KEY
-    searchParams['api_secret'] = process.env.IMAGE_API_SECRET
-    searchParams['format'] = 'json'
-    searchParams['limit'] = 100
-    console.log(searchParams)
-
-    const imageData = (
-      await imgApi.get('/', {
-        params: searchParams,
-      })
-    ).data
-
-    if (!imageData || imageData.objects.len === 0) return null
-
-    const randomImage =
-      imageData.objects[Math.floor(Math.random() * imageData.objects.length)]
-
-    return {
-      urls: {
-        url_duckduckgo: randomImage.url_duckduckgo,
-        url_duckduckgo_small: randomImage.url_duckduckgo_small,
-        url_gallery: randomImage.url_gallery,
-        url_hd: randomImage.url_hd,
-        url_histogram: randomImage.url_histogram,
-        url_real: randomImage.url_real,
-        url_regular: randomImage.url_regular,
-        url_skyplot: randomImage.url_skyplot,
-        url_thumb: randomImage.url_thumb,
-      },
-      astroBinUser: randomImage.user,
-      hash: randomImage.hash,
-    }
-  } catch (err) {
-    console.log(err)
-    return null
-  }
-}
 //#endregion
 
+//#region events endpoints
 async function getLastEvents(req, res) {
   const now = new Date(Date.now())
 
@@ -182,49 +131,119 @@ async function getTimelineDTOs(req, res) {
     res.status(400).json(err)
   }
 }
-async function getEvent(req, res) {
-  const eventId = req.params.eventId
-  const coords = req.query.lat ? [req.query.lat, req.query.lon] : null
-  console.log(`Get event request with: 
-id: ${eventId}
-coords: ${coords}
-`)
 
+function getEvent(req, res) {
+  console.log(`Get event request`)
+  eventsModel
+    .findById(req.params.eventId)
+    .then((event) => {
+      res.status(200).json(event)
+    })
+    .catch((err) => {
+      console.log('get last event error: ', err)
+      res.status(400).json(err)
+    })
+}
+//#endregion
+
+//#region apis endpoints
+async function getEventMoonPhase(req, res) {
+  console.log('getEventMoonPhase')
   try {
-    const event = await eventsModel.findById(eventId)
+    const event = await eventsModel.findById(req.params.eventId)
+    const moon = (
+      await moonApi.get('/', {
+        params: { d: event.date.getTime() },
+      })
+    ).data[0].phase
 
-    // console.log('event: ', event)
-    if (!event) {
-      const err = 'Event not found'
-      console.log(err)
-      res.status(404).send(err)
-      return
-    }
-
-    const dataPromises = [
-      getMoonData(event).catch((err) => null),
-      coords ? getWeatherData(coords, event.date) : null,
-      getImageData(event).catch((err) => null),
-    ]
-
-    const data = await Promise.all(dataPromises)
-    console.log('data: ', data)
-    let object = {
-      ...event._doc,
-      moon: data[0],
-      weather: data[1],
-      img: data[2],
-    }
-    console.log('object: ', object)
-    res.status(200).json(object)
+    res.status(200).json(moon)
   } catch (err) {
-    console.log('get last event error: ', err)
+    err = `Error in moon api: ${err}`
+    console.log(err)
     res.status(400).json(err)
   }
 }
+async function getEventImage(req, res) {
+  console.log('getEventImage')
+  try {
+    const event = await eventsModel.findById(req.params.eventId)
+    const searchParams = buildImageSearchParams(event)
+    searchParams['api_key'] = process.env.IMAGE_API_KEY
+    searchParams['api_secret'] = process.env.IMAGE_API_SECRET
+    searchParams['format'] = 'json'
+    searchParams['limit'] = 100
+    console.log(searchParams)
+
+    const imageData = (
+      await imgApi.get('/', {
+        params: searchParams,
+      })
+    ).data
+
+    if (!imageData || imageData.objects.len === 0) return null
+
+    const randomImage =
+      imageData.objects[Math.floor(Math.random() * imageData.objects.length)]
+
+    res.status(200).json({
+      urls: {
+        url_duckduckgo: randomImage.url_duckduckgo,
+        url_duckduckgo_small: randomImage.url_duckduckgo_small,
+        url_gallery: randomImage.url_gallery,
+        url_hd: randomImage.url_hd,
+        url_histogram: randomImage.url_histogram,
+        url_real: randomImage.url_real,
+        url_regular: randomImage.url_regular,
+        url_skyplot: randomImage.url_skyplot,
+        url_thumb: randomImage.url_thumb,
+      },
+      astroBinUser: randomImage.user,
+      hash: randomImage.hash,
+    })
+  } catch (err) {
+    console.log(err)
+    res.status(400).json(err)
+  }
+}
+async function getEventWeather(req, res) {
+  console.log('getEventWeather')
+  try {
+    const event = await eventsModel.findById(req.params.eventId)
+    //weather api only covers 7 days after now
+    if (event.date.getDate() > new Date(Date.now()).getDate() + 7) {
+      res.status(400).json('weather api only covers 7 days after now')
+      return
+    }
+    //********************/
+
+    const lat = req.query.lat
+    const lon = req.query.lon
+
+    const weather = (
+      await weatherApi.get('/', {
+        params: {
+          lat: lat,
+          lon: lon,
+          appid: process.env.WEATHER_API_KEY,
+        },
+      })
+    ).data
+
+    const data = filterNearestDayWeatherData(weather, event.date)
+    res.status(200).json(data)
+  } catch (err) {
+    console.log('error in weather api: ', err)
+    res.status(400).json(err)
+  }
+}
+//#endregion
 
 module.exports = {
   getLastEvents,
   getTimelineDTOs,
   getEvent,
+  getEventMoonPhase,
+  getEventImage,
+  getEventWeather,
 }
