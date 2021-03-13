@@ -128,7 +128,7 @@ async function getTimelineDTOs(req, res) {
 
   try {
     let events = await eventsModel
-      .find({ category: categoryName })
+      .find(categoryName === 'all' ? {} : { category: categoryName })
       .limit(limit)
       .skip(limit * page)
 
