@@ -1,4 +1,5 @@
 const router = require('express').Router()
+const { authUser } = require('../utils/index')
 const {
   getEvent,
   getLastEvents,
@@ -9,11 +10,11 @@ const {
 } = require('../controllers/events.controller')
 
 router
-  .get('/last', getLastEvents)
-  .get('/timelinedtos/:categoryName', getTimelineDTOs)
-  .get('/:eventId/moon', getEventMoonPhase)
-  .get('/:eventId/image', getEventImage)
-  .get('/:eventId/weather', getEventWeather)
-  .get('/:eventId', getEvent)
+  .get('/last', authUser, getLastEvents)
+  .get('/timelinedtos/:categoryName', authUser, getTimelineDTOs)
+  .get('/:eventId/moon', authUser, getEventMoonPhase)
+  .get('/:eventId/image', authUser, getEventImage)
+  .get('/:eventId/weather', authUser, getEventWeather)
+  .get('/:eventId', authUser, getEvent)
 
 module.exports = router
