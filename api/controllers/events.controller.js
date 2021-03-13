@@ -12,7 +12,7 @@ const weatherApi = axios.create({
 })
 const imgApi = axios.create({
   baseURL: 'http://astrobin.com/api/v1/image',
-  timeout: 10000,
+  timeout: 20000,
 })
 const INTERCEPT_AXIOS = false
 
@@ -32,6 +32,7 @@ if (INTERCEPT_AXIOS) {
 //#region helpers
 const buildTimelineDTO = (event) => {
   return {
+    _id: event._id,
     date: event.date,
     title: event.title,
   }
@@ -123,6 +124,11 @@ async function getLastEvents(req, res) {
   }
 }
 async function getTimelineDTOs(req, res) {
+  console.log(
+    'getTimelineDTOs ',
+    JSON.stringify(req.params, null, 2),
+    req.query
+  )
   const categoryName = req.params.categoryName
   const limit = parseInt(req.query.limit)
   const page = parseInt(req.query.page)
@@ -133,7 +139,9 @@ async function getTimelineDTOs(req, res) {
       .limit(limit)
       .skip(limit * page)
 
+    console.log('timeline events: ', events)
     events = events.map((event) => buildTimelineDTO(event))
+    console.log('timeline dtos: ', events)
 
     res.status(200).json(events)
   } catch (err) {
@@ -182,7 +190,8 @@ async function getEventImage(req, res) {
     searchParams['api_key'] = process.env.IMAGE_API_KEY
     searchParams['api_secret'] = process.env.IMAGE_API_SECRET
     searchParams['format'] = 'json'
-    searchParams['limit'] = 20
+    searchParams['limit'] = 10
+    searchParams['offset'] = Math.floor(Math.random() * 100)
     console.log(searchParams)
 
     const imageData = (
@@ -190,7 +199,7 @@ async function getEventImage(req, res) {
         params: searchParams,
       })
     ).data
-    console.log(imageData)
+    //console.log(imageData)
     if (!imageData || imageData.objects.len === 0) {
       res.status(404).json("event's image not found")
     }
