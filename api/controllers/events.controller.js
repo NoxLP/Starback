@@ -107,14 +107,15 @@ const buildImageSearchParams = (event) => {
 
 //#region events endpoints
 async function getLastEvents(req, res) {
+  console.log('GET LAST EVENTS')
   const now = new Date(Date.now())
-
+  console.log(now)
   try {
     const event = await eventsModel
       .find({ date: { $gte: now } })
       .sort({ date: 1 })
       .limit(4)
-
+    console.log(event)
     res.status(200).json(event)
   } catch (err) {
     console.log(err)
