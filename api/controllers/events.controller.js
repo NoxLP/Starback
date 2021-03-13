@@ -12,7 +12,7 @@ const weatherApi = axios.create({
 })
 const imgApi = axios.create({
   baseURL: 'http://astrobin.com/api/v1/image',
-  timeout: 20000,
+  timeout: 60000,
 })
 const INTERCEPT_AXIOS = false
 
@@ -204,10 +204,9 @@ async function getEventImage(req, res) {
       res.status(404).json("event's image not found")
     }
 
-    const randomImage =
+    let randomImage =
       imageData.objects[Math.floor(Math.random() * imageData.objects.length)]
-
-    res.status(200).json({
+    randomImage = {
       urls: {
         url_duckduckgo: randomImage.url_duckduckgo,
         url_duckduckgo_small: randomImage.url_duckduckgo_small,
@@ -221,7 +220,10 @@ async function getEventImage(req, res) {
       },
       astroBinUser: randomImage.user,
       hash: randomImage.hash,
-    })
+    }
+    console.log(randomImage)
+
+    res.status(200).json(randomImage)
   } catch (err) {
     console.log(err)
     res.status(400).json(err)
