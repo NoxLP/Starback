@@ -40,8 +40,8 @@ app.listen(PORT, (err) => {
   if (err) {
     throw new Error(err)
   }
-  console.info('>'.repeat(40))
+  console.info('>'.repeat(32))
   console.info('💻  Starback Live')
-  console.info(`📡  PORT: http://localhost:${PORT}`)
-  console.info('>'.repeat(40) + '\n')
+  console.info(`📡  URL: http://localhost:${PORT}`)
+  console.info('>'.repeat(32) + '\n')
 })
