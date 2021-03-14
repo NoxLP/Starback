@@ -31,6 +31,7 @@ if (INTERCEPT_AXIOS) {
 
 //#region helpers
 const buildTimelineDTO = (event) => {
+  console.log('*************** ', event.date)
   return {
     _id: event._id,
     date: event.date,
@@ -132,10 +133,17 @@ async function getTimelineDTOs(req, res) {
   const categoryName = req.params.categoryName
   const limit = parseInt(req.query.limit)
   const page = parseInt(req.query.page)
+  const now = new Date(Date.now())
+  //{ date: { $gte: now } }
+  const findParams = {
+    date: { $gte: now },
+  }
+  if (categoryName !== 'all') findParams['categoryName'] = categoryName
 
   try {
     let events = await eventsModel
-      .find(categoryName === 'all' ? {} : { category: categoryName })
+      .find(findParams)
+      .sort({ date: 1 })
       .limit(limit)
       .skip(limit * page)
 
