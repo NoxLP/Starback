@@ -138,7 +138,7 @@ async function getTimelineDTOs(req, res) {
   const findParams = {
     date: { $gte: now },
   }
-  if (categoryName !== 'all') findParams['categoryName'] = categoryName
+  if (categoryName !== 'all') findParams['category'] = categoryName
 
   try {
     let events = await eventsModel
