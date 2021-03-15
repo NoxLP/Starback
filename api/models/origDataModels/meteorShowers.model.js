@@ -39,5 +39,5 @@ const meteorShowersSchema = new Mongoose.Schema({
   },
 })
 
-const meteorShowersModel = Mongoose.model('meteorShowers', meteorShowersSchema)
+const meteorShowersModel = Mongoose.model('meteor_showers', meteorShowersSchema)
 module.exports = meteorShowersModel

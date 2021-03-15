@@ -158,9 +158,19 @@ Magnitud aparente: ${ephem.mag}`
   }
   return description
 }
+const buildMeteorShowersDate = (ephem) => {
+  let date = new Date(ephem.dateMin)
+  date.setFullYear(2021)
+  return date
+}
 const buildEvent = (ephem, category) => {
+  let mydate =
+    category === 'meteorShowers'
+      ? buildMeteorShowersDate(ephem)
+      : new Date(ephem.date)
+  console.log(mydate)
   return {
-    date: new Date(ephem.date),
+    date: mydate,
     title: buildEventTitle(ephem, category),
     description: buildEventDescription(ephem, category),
     category: category,
@@ -297,6 +307,7 @@ async function buildMeteorsEvents() {
   console.log('build meteor showers events')
   try {
     let meteorShowers = await meteorShowersModel.find()
+    console.log(meteorShowers.length, meteorShowers[0])
 
     await eventsModel.insertMany(
       meteorShowers.map((ephem) => buildEvent(ephem, 'meteorShowers'))
@@ -327,11 +338,11 @@ async function buildConjunctionEvents() {
 
 ;(async function executeSeedScript() {
   await Promise.all([
-    buildPlanetsEvents_2021_2022(),
-    buildCometsEvents(),
-    buildEclipsesEvents(),
+    //buildPlanetsEvents_2021_2022(),
+    //buildCometsEvents(),
+    //buildEclipsesEvents(),
     buildMeteorsEvents(),
-    buildConjunctionEvents(),
+    //buildConjunctionEvents(),
   ])
 
   await mongoose.connection.close()

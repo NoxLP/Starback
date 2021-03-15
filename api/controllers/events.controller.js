@@ -105,6 +105,7 @@ const buildImageSearchParams = (event) => {
       }
   }
 }
+const findInAstrobinImages
 //#endregion
 
 //#region events endpoints
@@ -207,7 +208,7 @@ async function getEventImage(req, res) {
         params: searchParams,
       })
     ).data
-    //console.log(imageData)
+
     if (!imageData || imageData.objects.len === 0) {
       res.status(404).json("event's image not found")
     }
