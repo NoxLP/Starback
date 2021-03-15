@@ -105,7 +105,6 @@ const buildImageSearchParams = (event) => {
       }
   }
 }
-const findInAstrobinImages
 //#endregion
 
 //#region events endpoints
