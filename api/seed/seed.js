@@ -338,24 +338,12 @@ async function buildConjunctionEvents() {
 
 ;(async function executeSeedScript() {
   await Promise.all([
-    //buildPlanetsEvents_2021_2022(),
-    //buildCometsEvents(),
-    //buildEclipsesEvents(),
+    buildPlanetsEvents_2021_2022(),
+    buildCometsEvents(),
+    buildEclipsesEvents(),
     buildMeteorsEvents(),
-    //buildConjunctionEvents(),
+    buildConjunctionEvents(),
   ])
 
   await mongoose.connection.close()
 })()
-
-/*;(function testObjectsArray() {
-  conjunctionsModel.find().then((conjunctions) => {
-    console.log(
-      JSON.stringify(
-        conjunctions.map((ephem) => buildEvent(ephem, 'conjunctions')),
-        null,
-        2
-      )
-    )
-  })
-})()*/
