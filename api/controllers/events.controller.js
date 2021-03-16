@@ -89,7 +89,7 @@ const buildImageSearchParams = (event) => {
       }
     case 'planets':
       return {
-        description__icontains: event.origData.categoryName,
+        description__icontains: event.origData.name,
       }
     case 'meteorShowers':
       return {
