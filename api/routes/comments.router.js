@@ -1,5 +1,4 @@
 const router = require('express').Router()
-const { authUser } = require('../utils')
 const {
   postComment,
   getAllComments,
@@ -10,16 +9,14 @@ const {
   deleteReply,
 } = require('../controllers/comments.controller')
 
-router.get('/:eventId', authUser, getAllComments)
+router.get('/:eventId', getAllComments)
+
+router.put('/:commentId/events/:eventId', editComment).put('/reply', editReply)
 
 router
-  .put('/:commentId/events/:eventId', authUser, editComment)
-  .put('/reply', authUser, editReply)
+  .delete('/:commentId/events/:eventId', deleteComment)
+  .delete('/reply', deleteReply)
 
-router
-  .delete('/:commentId/events/:eventId', authUser, deleteComment)
-  .delete('/reply', authUser, deleteReply)
-
-router.post('/reply', authUser, replyComment).post('/', authUser, postComment)
+router.post('/reply', replyComment).post('/', postComment)
 
 module.exports = router
