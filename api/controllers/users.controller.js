@@ -16,6 +16,7 @@ function getUser(req, res) {
     })
 }
 function putAddFavourite(req, res) {
+  console.log('putAddFavourite')
   usersModel
     .findById(res.locals.user._id)
     .then((user) => {
