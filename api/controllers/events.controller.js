@@ -193,7 +193,9 @@ async function getEventMoonPhase(req, res) {
 async function getEventImage(req, res) {
   console.log('getEventImage')
   try {
-    const event = await eventsModel.findById(req.params.eventId)
+    console.log('***** EVENT ID: ', req.params.eventId)
+    let event = await eventsModel.findById(req.params.eventId)
+    console.log('***** EVENT: ', event)
     const searchParams = buildImageSearchParams(event)
     searchParams['api_key'] = process.env.IMAGE_API_KEY
     searchParams['api_secret'] = process.env.IMAGE_API_SECRET

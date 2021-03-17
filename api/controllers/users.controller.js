@@ -4,7 +4,6 @@ function getUser(req, res) {
   console.log('get user')
   usersModel
     .findById(res.locals.user._id)
-    .populate('favourites')
     .then((user) => {
       console.log('got user: ', user)
 

@@ -38,6 +38,7 @@ const userSchema = new mongoose.Schema({
   birthDate: Date,
   favourites: {
     type: [mongoose.Types.ObjectId],
+    ref: 'events',
   },
 })
 
