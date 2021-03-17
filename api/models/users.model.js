@@ -36,6 +36,9 @@ const userSchema = new mongoose.Schema({
     enum: ['Estudiante', 'Aficionado', 'Astrónomo'],
   },
   birthDate: Date,
+  favourites: {
+    type: [mongoose.Types.ObjectId],
+  },
 })
 
 const userModel = mongoose.model('user', userSchema)
