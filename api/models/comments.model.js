@@ -1,8 +1,12 @@
 const Mongoose = require('mongoose')
 
 const commentsSchema = new Mongoose.Schema({
+  userEmail: {
+    type: String,
+    required: true,
+  },
   user: {
-    type: Mongoose.Types.ObjectId,
+    type: String,
     required: true,
   },
   event: {
