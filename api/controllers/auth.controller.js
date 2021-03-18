@@ -32,8 +32,8 @@ function login(req, res) {
     .then((user) => {
       if (user) {
         if (bcrypt.compareSync(req.body.password, user.password)) {
-          const data = { email: user.email, user: user.user }
-          const token = jwt.sign(data, process.env.SECRET, {expiresIn: '1d'})
+          const data = { email: user.email, user: user.username }
+          const token = jwt.sign(data, process.env.SECRET, { expiresIn: '1d' })
 
           res.status(200).json({ token: token, ...data })
         } else {

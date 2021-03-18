@@ -36,6 +36,7 @@ const buildTimelineDTO = (event) => {
     _id: event._id,
     date: event.date,
     title: event.title,
+    category: event.category,
   }
 }
 const filterNearestDayWeatherData = (weather, date) => {
