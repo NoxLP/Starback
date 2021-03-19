@@ -2,6 +2,15 @@ const userModel = require('../models/users.model')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
+const buildUserData = (user) => {
+  console.log(user)
+  return {
+    email: user.email,
+    user: user.username,
+    favourites: user.favourites,
+  }
+}
+
 function signUp(req, res) {
   console.log('signup ', req.body)
   if (req.body && req.body.password) {
@@ -11,7 +20,7 @@ function signUp(req, res) {
     userModel
       .create(req.body)
       .then((user) => {
-        const data = { email: user.email, user: user.user }
+        const data = buildUserData(user)
         const token = jwt.sign(data, process.env.SECRET)
         console.log('signup ok, token: ', token)
         res.status(200).json({ token: token, ...data })
@@ -32,7 +41,7 @@ function login(req, res) {
     .then((user) => {
       if (user) {
         if (bcrypt.compareSync(req.body.password, user.password)) {
-          const data = { email: user.email, user: user.username }
+          const data = buildUserData(user)
           const token = jwt.sign(data, process.env.SECRET, { expiresIn: '1d' })
 
           res.status(200).json({ token: token, ...data })
